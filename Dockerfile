@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y \
     # Additional Qt modules for complex projects
     qtdeclarative5-dev \
     qtmultimedia5-dev \
-    qtsvg5-dev \
-    qtcharts5-dev \
-    qtserialport5-dev \
+    libqt5svg5-dev \
+    libqt5charts5-dev \
+    libqt5serialport5-dev \
     qtwebengine5-dev \
     qtquickcontrols2-5-dev \
     # System libraries commonly needed
@@ -24,10 +24,10 @@ RUN apt-get update && apt-get install -y \
     g++-aarch64-linux-gnu \
     gcc-aarch64-linux-gnu \
     binutils-aarch64-linux-gnu \
-    # Utilities
+    # Utilities (readelf is part of binutils)
     pkg-config \
     file \
-    readelf \
+    binutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
