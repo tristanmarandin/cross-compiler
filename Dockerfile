@@ -1,9 +1,10 @@
 FROM ubuntu:22.04
 
-# Install build tools and cross-compiler for ARM64
+# Install build tools, cross-compiler for ARM64, and Qt/Qmake
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
+    qtbase5-dev \
+    qtbase5-dev-tools \
     g++-aarch64-linux-gnu \
     gcc-aarch64-linux-gnu \
     && rm -rf /var/lib/apt/lists/*

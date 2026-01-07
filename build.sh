@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cross-compilation script for ARM64
+# Cross-compilation script for ARM64 using Qmake/Qt
 # Usage: ./build.sh [options]
 # Options:
 #   --clean      Clean build directory before building
@@ -61,28 +61,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# CMake configuration for ARM64 cross-compilation
-CMAKE_ARGS=(
-    -DCMAKE_SYSTEM_NAME=Linux
-    -DCMAKE_SYSTEM_PROCESSOR=aarch64
-    -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc
-    -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
-)
+# Qmake configuration for ARM64 cross-compilation
+export CC=aarch64-linux-gnu-gcc
+export CXX=aarch64-linux-gnu-g++
 
-# Add CMAKE_FIND_ROOT_PATH if dependencies are installed
-if [ -d "/usr/aarch64-linux-gnu" ]; then
-    CMAKE_ARGS+=(
-        -DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu
-        -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER
-        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY
-        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
-        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY
-    )
-fi
+# Qmake arguments for cross-compilation
+QMAKE_ARGS=(
+    "QMAKE_CC=$CC"
+    "QMAKE_CXX=$CXX"
+    "QMAKE_LINK=$CXX"
+    "QMAKE_LINK_SHLIB=$CXX"
+    "QMAKE_AR=aarch64-linux-gnu-ar"
+    "QMAKE_STRIP=aarch64-linux-gnu-strip"
+    "QMAKE_OBJCOPY=aarch64-linux-gnu-objcopy"
+    "QMAKE_CFLAGS=-march=armv8-a"
+    "QMAKE_CXXFLAGS=-march=armv8-a"
+    "QMAKE_LFLAGS=-march=armv8-a"
+)
 
 # Verbose flag
 if [ "$VERBOSE" = true ]; then
-    CMAKE_ARGS+=(-DCMAKE_VERBOSE_MAKEFILE=ON)
+    QMAKE_ARGS+=("CONFIG+=debug")
 fi
 
 echo -e "${GREEN}=== ARM64 Cross-Compilation Build Script ===${NC}"
@@ -96,6 +95,14 @@ if ! command -v aarch64-linux-gnu-gcc &> /dev/null; then
     exit 1
 fi
 
+# Check if qmake is available
+if ! command -v qmake &> /dev/null; then
+    echo -e "${RED}Error: qmake not found!${NC}"
+    echo "Please install Qt development tools:"
+    echo "  sudo apt-get install qtbase5-dev qmake"
+    exit 1
+fi
+
 # Clean build directory if requested
 if [ "$CLEAN" = true ]; then
     echo -e "${YELLOW}Cleaning build directory...${NC}"
@@ -106,19 +113,19 @@ fi
 mkdir -p build
 cd build
 
-# Configure CMake
-echo -e "${GREEN}Configuring CMake for ARM64...${NC}"
+# Configure Qmake
+echo -e "${GREEN}Configuring Qmake for ARM64...${NC}"
 if [ "$VERBOSE" = true ]; then
-    echo "CMake arguments: ${CMAKE_ARGS[@]}"
+    echo "Qmake arguments: ${QMAKE_ARGS[@]}"
 fi
-cmake .. "${CMAKE_ARGS[@]}"
+qmake .. "${QMAKE_ARGS[@]}"
 
 # Build
 echo -e "${GREEN}Building project...${NC}"
 if [ "$VERBOSE" = true ]; then
-    cmake --build . --verbose
+    make VERBOSE=1
 else
-    cmake --build .
+    make
 fi
 
 # Verify architecture if requested
