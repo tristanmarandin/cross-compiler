@@ -3,7 +3,8 @@
 # Dependency checker for Qt cross-compilation projects
 # Checks if required Qt modules and tools are available
 
-set -e
+# Don't exit on error, we want to check all dependencies
+set +e
 
 # Colors
 RED='\033[0;31m'
@@ -54,17 +55,21 @@ PRO_FILE=$(find . -maxdepth 2 -name "*.pro" -type f | grep -v build | head -1)
 if [ -n "$PRO_FILE" ]; then
     echo ""
     echo "Checking Qt modules from $PRO_FILE:"
-    QT_MODULES=$(grep -E "^QT\s*\+=" "$PRO_FILE" | sed 's/QT\s*+=\s*//' | tr ' ' '\n' | grep -v '^$')
+    QT_MODULES=$(grep -E "^QT\s*\+=" "$PRO_FILE" 2>/dev/null | sed 's/QT\s*+=\s*//' | tr ' ' '\n' | grep -v '^$' || true)
     
-    for module in $QT_MODULES; do
-        # Check if module package is installed
-        if dpkg -l | grep -q "qt.*$module.*dev"; then
-            echo -e "  ${GREEN}✓ Qt module: $module${NC}"
-        else
-            echo -e "  ${YELLOW}⚠ Qt module: $module (may not be installed)${NC}"
-            WARNINGS=$((WARNINGS + 1))
-        fi
-    done
+    if [ -n "$QT_MODULES" ]; then
+        for module in $QT_MODULES; do
+            # Check if module package is installed
+            if dpkg -l 2>/dev/null | grep -q "qt.*$module.*dev"; then
+                echo -e "  ${GREEN}✓ Qt module: $module${NC}"
+            else
+                echo -e "  ${YELLOW}⚠ Qt module: $module (may not be installed)${NC}"
+                WARNINGS=$((WARNINGS + 1))
+            fi
+        done
+    else
+        echo -e "  ${YELLOW}No Qt modules specified in .pro file${NC}"
+    fi
 fi
 
 # Check system libraries

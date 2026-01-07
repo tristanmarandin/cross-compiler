@@ -1,5 +1,8 @@
 FROM ubuntu:22.04
 
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install build tools, cross-compiler for ARM64, and Qt/Qmake with additional modules
 RUN apt-get update && apt-get install -y \
     build-essential \

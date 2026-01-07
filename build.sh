@@ -211,8 +211,12 @@ if [ "$VERIFY" = true ]; then
     elif [ -f "./$TARGET_NAME/$TARGET_NAME" ]; then
         BINARY="./$TARGET_NAME/$TARGET_NAME"
     else
-        # Search for any executable in build directory
-        BINARY=$(find . -type f -executable -not -name "*.o" -not -name "*.so" | head -1)
+        # Search for executable matching target name, excluding CMake artifacts
+        BINARY=$(find . -maxdepth 2 -type f -executable -name "$TARGET_NAME" -not -path "*/CMakeFiles/*" -not -path "*/\.*" | head -1)
+        if [ -z "$BINARY" ]; then
+            # Fallback: search for any executable, excluding CMake and hidden files
+            BINARY=$(find . -maxdepth 2 -type f -executable -not -name "*.o" -not -name "*.so" -not -path "*/CMakeFiles/*" -not -path "*/\.*" | head -1)
+        fi
     fi
     
     if [ -n "$BINARY" ] && [ -f "$BINARY" ]; then
