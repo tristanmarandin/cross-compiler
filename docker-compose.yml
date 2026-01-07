@@ -5,4 +5,4 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: bash -c "mkdir -p build && cd build && cmake .. -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ && cmake --build . && readelf -h ./HelloWorld | grep Machine"
+    command: bash -c "chmod +x build.sh && ./build.sh --verify"
