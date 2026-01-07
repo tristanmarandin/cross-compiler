@@ -5,4 +5,4 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: bash -c "chmod +x build.sh && ./build.sh --verify"
+    command: bash -c "chmod +x build.sh check-dependencies.sh && ./check-dependencies.sh && ./build.sh --verify"

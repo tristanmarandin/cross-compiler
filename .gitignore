@@ -1,1 +1,15 @@
 build/
+*.o
+*.so
+*.a
+*.pro.user
+*.pro.user.*
+*.qmlc
+*.jsc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.autosave
+*~
+.DS_Store
