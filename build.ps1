@@ -1,4 +1,4 @@
-# Cross-compilation script for ARM64 (PowerShell version)
+# Cross-compilation script for ARM64 using qmake (PowerShell version)
 # Usage: .\build.ps1 [options]
 # Options:
 #   -Clean      Clean build directory before building
@@ -24,7 +24,7 @@ function Write-ColorOutput($ForegroundColor) {
 }
 
 if ($Help) {
-    Write-Output "Cross-compilation script for ARM64"
+    Write-Output "Cross-compilation script for ARM64 using qmake"
     Write-Output ""
     Write-Output "Usage: .\build.ps1 [options]"
     Write-Output ""
@@ -37,17 +37,18 @@ if ($Help) {
     Write-Output ""
     Write-Output "Note: This script is intended for use in Docker/Linux environments."
     Write-Output "For Windows, use Docker or WSL to run build.sh"
+    Write-Output "The build process uses qmake with the linux-aarch64-g++ spec."
     exit 0
 }
 
 $ErrorActionPreference = "Stop"
 
-Write-ColorOutput Green "=== ARM64 Cross-Compilation Build Script ==="
+Write-ColorOutput Green "=== ARM64 Cross-Compilation Build Script (using qmake) ==="
 Write-Output ""
 
 # Note: This script is mainly for reference
 # Cross-compilation typically requires Docker or WSL on Windows
-Write-ColorOutput Yellow "Note: Cross-compilation for ARM64 requires Linux tools."
+Write-ColorOutput Yellow "Note: Cross-compilation for ARM64 requires Linux tools and qmake."
 Write-ColorOutput Yellow "Please use Docker or WSL to run build.sh instead."
 Write-Output ""
 Write-Output "To use Docker:"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cross-compilation script for ARM64 using Qmake/Qt
+# Cross-compilation script for ARM64 using qmake
 # Usage: ./build.sh [options]
 # Options:
 #   --clean      Clean build directory before building
@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --help)
-            echo "Cross-compilation script for ARM64"
+            echo "Cross-compilation script for ARM64 using qmake"
             echo ""
             echo "Usage: ./build.sh [options]"
             echo ""
@@ -61,45 +61,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Qmake configuration for ARM64 cross-compilation
-export CC=aarch64-linux-gnu-gcc
-export CXX=aarch64-linux-gnu-g++
+# Cross-compiler settings
+CC=aarch64-linux-gnu-gcc
+CXX=aarch64-linux-gnu-g++
 
-# Qmake arguments for cross-compilation
-QMAKE_ARGS=(
-    "QMAKE_CC=$CC"
-    "QMAKE_CXX=$CXX"
-    "QMAKE_LINK=$CXX"
-    "QMAKE_LINK_SHLIB=$CXX"
-    "QMAKE_AR=aarch64-linux-gnu-ar"
-    "QMAKE_STRIP=aarch64-linux-gnu-strip"
-    "QMAKE_OBJCOPY=aarch64-linux-gnu-objcopy"
-    "QMAKE_CFLAGS=-march=armv8-a"
-    "QMAKE_CXXFLAGS=-march=armv8-a"
-    "QMAKE_LFLAGS=-march=armv8-a"
-)
-
-# Verbose flag
-if [ "$VERBOSE" = true ]; then
-    QMAKE_ARGS+=("CONFIG+=debug")
-fi
-
-echo -e "${GREEN}=== ARM64 Cross-Compilation Build Script ===${NC}"
+echo -e "${GREEN}=== ARM64 Cross-Compilation Build Script (using qmake) ===${NC}"
 echo ""
 
-# Check if cross-compiler is available
-if ! command -v aarch64-linux-gnu-gcc &> /dev/null; then
-    echo -e "${RED}Error: aarch64-linux-gnu-gcc not found!${NC}"
-    echo "Please install the cross-compiler:"
-    echo "  sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"
+# Use Qt qmake from /opt/qt-arm64
+QT_QMAKE="/opt/qt-arm64/bin/qmake"
+if [ ! -f "$QT_QMAKE" ]; then
+    echo -e "${RED}Error: Qt qmake not found at $QT_QMAKE${NC}"
+    echo "Qt Core must be cross-compiled first in the Dockerfile"
     exit 1
 fi
+echo -e "${GREEN}Using Qt qmake: $QT_QMAKE${NC}"
 
-# Check if qmake is available
-if ! command -v qmake &> /dev/null; then
-    echo -e "${RED}Error: qmake not found!${NC}"
-    echo "Please install Qt development tools:"
-    echo "  sudo apt-get install qtbase5-dev qmake"
+# Check if cross-compiler is available
+if ! command -v $CXX &> /dev/null; then
+    echo -e "${RED}Error: $CXX not found!${NC}"
+    echo "Please install the cross-compiler:"
+    echo "  sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"
     exit 1
 fi
 
@@ -113,18 +95,45 @@ fi
 mkdir -p build
 cd build
 
-# Configure Qmake
-echo -e "${GREEN}Configuring Qmake for ARM64...${NC}"
-if [ "$VERBOSE" = true ]; then
-    echo "Qmake arguments: ${QMAKE_ARGS[@]}"
-fi
-qmake .. "${QMAKE_ARGS[@]}"
+# Get the absolute path to the project root (parent of build directory)
+PROJECT_ROOT=$(cd .. && pwd)
+MKSPEC_PATH="$PROJECT_ROOT/mkspecs/linux-aarch64-g++"
 
-# Build
-echo -e "${GREEN}Building project...${NC}"
+# Build the project using qmake
+echo -e "${GREEN}Building project for ARM64 using qmake...${NC}"
 if [ "$VERBOSE" = true ]; then
+    echo "Cross-compiler: $CXX"
+    echo "Qmake spec: linux-aarch64-g++"
+    echo "Mkspec path: $MKSPEC_PATH"
+    echo ""
+    # Set QMAKESPEC to point to our custom mkspec directory
+    export QMAKESPEC="$MKSPEC_PATH"
+    export PATH="/opt/qt-arm64/bin:$PATH"
+    $QT_QMAKE .. \
+        "CONFIG+=qt" \
+        "CONFIG+=static" \
+        "QT+=core" \
+        "QMAKE_CC=$CC" \
+        "QMAKE_CXX=$CXX" \
+        "QMAKE_LINK=$CXX" \
+        "QMAKE_CFLAGS=-march=armv8-a" \
+        "QMAKE_CXXFLAGS=-march=armv8-a" \
+        "QMAKE_LFLAGS=-march=armv8-a"
     make VERBOSE=1
 else
+    # Set QMAKESPEC to point to our custom mkspec directory
+    export QMAKESPEC="$MKSPEC_PATH"
+    export PATH="/opt/qt-arm64/bin:$PATH"
+    $QT_QMAKE .. \
+        "CONFIG+=qt" \
+        "CONFIG+=static" \
+        "QT+=core" \
+        "QMAKE_CC=$CC" \
+        "QMAKE_CXX=$CXX" \
+        "QMAKE_LINK=$CXX" \
+        "QMAKE_CFLAGS=-march=armv8-a" \
+        "QMAKE_CXXFLAGS=-march=armv8-a" \
+        "QMAKE_LFLAGS=-march=armv8-a"
     make
 fi
 
@@ -142,8 +151,16 @@ if [ "$VERIFY" = true ]; then
                 echo -e "${RED}✗ Warning: Binary is not compiled for ARM64!${NC}"
                 exit 1
             fi
+        elif command -v file &> /dev/null; then
+            FILE_INFO=$(file ./HelloWorld)
+            echo -e "File info: ${GREEN}${FILE_INFO}${NC}"
+            if echo "$FILE_INFO" | grep -q "aarch64\|ARM"; then
+                echo -e "${GREEN}✓ Binary appears to be compiled for ARM64${NC}"
+            else
+                echo -e "${YELLOW}⚠ Could not verify architecture with file command${NC}"
+            fi
         else
-            echo -e "${YELLOW}readelf not available, skipping verification${NC}"
+            echo -e "${YELLOW}readelf and file not available, skipping verification${NC}"
         fi
     else
         echo -e "${RED}Error: HelloWorld executable not found!${NC}"
