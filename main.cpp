@@ -1,11 +1,11 @@
-#include <QCoreApplication>
+#include <QApplication>
 #include <QDebug>
 
 int main(int argc, char *argv[]) {
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
     
-    qDebug() << "Hello, World from Qt Core!";
-    qDebug() << "Qt Core version:" << QT_VERSION_STR;
+    qDebug() << "Hello, World from Qt GUI!";
+    qDebug() << "Qt version:" << QT_VERSION_STR;
     
     return app.exec();
 }

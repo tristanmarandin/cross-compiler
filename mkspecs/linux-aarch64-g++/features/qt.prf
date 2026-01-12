@@ -1,8 +1,0 @@
-# Qt configuration for cross-compilation ARM64 with static Qt Core
-# No sysroot required - static linking
-
-# Qt Core module configuration
-QT_CONFIG += core
-
-# Static linking configuration
-CONFIG += static

@@ -121,19 +121,17 @@ if [ "$VERBOSE" = true ]; then
         "QMAKE_LFLAGS=-march=armv8-a"
     make VERBOSE=1
 else
-    # Set QMAKESPEC to point to our custom mkspec directory
-    export QMAKESPEC="$MKSPEC_PATH"
+    
     export PATH="/opt/qt-arm64/bin:$PATH"
     $QT_QMAKE .. \
-        "CONFIG+=qt" \
-        "CONFIG+=static" \
-        "QT+=core" \
-        "QMAKE_CC=$CC" \
-        "QMAKE_CXX=$CXX" \
-        "QMAKE_LINK=$CXX" \
-        "QMAKE_CFLAGS=-march=armv8-a" \
-        "QMAKE_CXXFLAGS=-march=armv8-a" \
-        "QMAKE_LFLAGS=-march=armv8-a"
+    "CONFIG+=static" \
+    "QT+=core" \
+    "QMAKE_CC=$CC" \
+    "QMAKE_CXX=$CXX" \
+    "QMAKE_LINK=$CXX" \
+    "QMAKE_CFLAGS=-march=armv8-a" \
+    "QMAKE_CXXFLAGS=-march=armv8-a" \
+    "QMAKE_LFLAGS=-march=armv8-a"
     make
 fi
 

@@ -49,11 +49,8 @@ RUN wget https://ftp.fau.de/qtproject/archive/qt/5.15/${QT_VERSION}/single/qt-ev
 
 
 # =========================
-# 3. Configure & build Qt Core (static, ARM64)
+# 3. Configure & build Qt with GUI (static, ARM64)
 # =========================
-
-COPY mkspecs/linux-aarch64-g++ \
-     /tmp/${QT_SRC_DIR}/qtbase/mkspecs/devices/linux-aarch64-g++
 
 WORKDIR /tmp/${QT_SRC_DIR}
 RUN ./configure \
@@ -62,13 +59,11 @@ RUN ./configure \
     -static \
     -opensource \
     -confirm-license \
-    -no-gui \
-    -no-widgets \
     -no-opengl \
     -no-dbus \
     -nomake examples \
     -nomake tests \
-    -device linux-aarch64-g++ \
+    -xplatform linux-aarch64-gnu-g++ \
     -device-option CROSS_COMPILE=aarch64-linux-gnu- \
     -skip qtmultimedia \
     -skip qtlocation \
@@ -77,6 +72,7 @@ RUN ./configure \
     -skip qtwebengine \
     && make -j1 V=1 \
     && make install
+
 
 # Cleanup
 RUN rm -rf /tmp/${QT_SRC_DIR}

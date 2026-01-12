@@ -5,6 +5,6 @@ CONFIG += static
 TARGET = HelloWorld
 TEMPLATE = app
 
-QT += core
+QT += core gui widgets
 
 SOURCES += main.cpp
